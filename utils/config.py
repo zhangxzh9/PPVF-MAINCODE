@@ -28,8 +28,8 @@ class Config:
         parser = argparse.ArgumentParser(description=self.current_time)
 
         #运行相关参数
-        parser.add_argument("--fetch_policy", type=str, default="PPVF") # Edge的缓存策略 OPT / PPVF / INFOCOM / GREED
-        parser.add_argument("--predict_policy", type=str, default="HPP_PAC") # 点过程模型  HPP_PAC / HPP_SELF / NO_MODEL / HRS
+        parser.add_argument("--fetch_policy", type=str, default="PPVF") # Edge的缓存策略 
+        parser.add_argument("--predict_policy", type=str, default="HPP_PAC") # prediction model
         parser.add_argument("--noise", action="store_true") 
         parser.add_argument("--train_level", type=str, default="edge") # province / city / isp / edge
         parser.add_argument("--run_way", type=str, default="training") # training / testing
@@ -73,7 +73,7 @@ class Config:
         self.maxProgressNum = log_parser.maxProgressNum
 
         # 调谐一些参数
-        if self.fetch_policy in ["INFOCOM"]:
+        if self.fetch_policy in ["PPVF"]:
             self.if_noise = True
         else:
             raise  ValueError(f"not this fetch_policy {self.fetch_policy}")

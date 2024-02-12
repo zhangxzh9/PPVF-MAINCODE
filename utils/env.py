@@ -204,7 +204,7 @@ class Env(object):
 
             #更新缓存
             for index in range(self.hyper_paras_num):
-                if self.fetch_policy in ["INFOCOM"]:
+                if self.fetch_policy in ["PPVF"]:
                     #获取不同缓存大小情况下的预请求
                     if self.test_hyper_paras == 'f_e':
                         redundant_request= ed.get_redundant_request(cache_index = index, f_e_total = self.f_e[index]*(ed_click-ed_hit[index]), epsilon = self.epsilon, xi=self.xi, psi=psi)

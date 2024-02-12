@@ -12,7 +12,7 @@ class ED(object):
         self.content_num = int(content_num) #视频总数
         self.ed_index = index
 
-        self.predict_policy = cfg["predict_policy"] # 效用的预测模型（non, PPVF, GREED, INFOCOM：用的是HPP_PAC输出的强度函数，lfu:历史请求次数比例，opt:未来请求比例，...）
+        self.predict_policy = cfg["predict_policy"] # 效用的预测模型
         self.fetch_policy   = cfg['fetch_policy'] # 预请求策略
         self.if_noise       = cfg['if_noise'] #是否加噪
 
@@ -33,12 +33,10 @@ class ED(object):
             # self.sum_X = np.zeros((self.content_num, 1))  
             # self.sum_X_square = np.zeros((self.content_num, 1)) 
 
-        if self.fetch_policy in ["PPVF","INFOCOM","GREED","RANDOM"]:# 缩放函数所需
+        if self.fetch_policy in ["PPVF"]:# 缩放函数所需
             self.Up_bound  = 1 # 效用上限
             self.Low_bound = 0.1 # 效用下限
             self.B0        = 1 / (1 + np.log(self.Up_bound / self.Low_bound)) #最低阈值
-        elif self.fetch_policy in ["OPT","LRU","FIFO","LFU"]:
-            pass
         else:
             raise ValueError(f"not this fetch policy: {self.fetch_policy}")
         
@@ -64,14 +62,9 @@ class ED(object):
         #统计命中率
         if ed_click != 0:
             ed_hit = []
-            if self.fetch_policy in ["GREED","INFOCOM","PPVF","RANDOM"]:
+            if self.fetch_policy in ["PPVF"]:
                 for cache in self.cache_list:
                     ed_hit.append(int(np.sum(ed_slot_trace.apply(if_success, axis = 1, cachingSet=set(cache.keys())))))
-            elif self.fetch_policy in ["LRU","LFU","FIFO"]:
-                for cache_index in range(len(self.cache_list)):
-                    ed_hit.append(int(np.sum(ed_slot_trace.apply(if_success, axis = 1, cachingSet=set(self.cache_list[cache_index].keys())))))
-                    self.update_cache(cache_index=cache_index,redundant_request=None,ed_slot_trace=ed_slot_trace)
-                    # ed_hit.append(int(self.update_cache(cache_index=cache_index,redundant_request=None,ed_slot_trace=ed_slot_trace)))
             else:
                 raise ValueError(f"not this fetch policy: {self.fetch_policy}")
             ed_hit = np.array(ed_hit,dtype=np.int64)
@@ -125,7 +118,7 @@ class ED(object):
         cache = self.cache_list[cache_index]
         action = np.zeros(shape=self.content_num,dtype=np.int8) #当前slot的缓存action
         f_k = 0 
-        if self.fetch_policy == "INFOCOM": #infocom2022 + HPP_PAC
+        if self.fetch_policy == "PPVF": 
             sampled_indexes = np.random.choice(range(self.content_num), size = self.content_num, replace = False) # 无放回随机采样
             for i in sampled_indexes:
                 if f_k + 1 > f_e_total:
@@ -174,7 +167,7 @@ class ED(object):
         hits = 0
         cache = self.cache_list[cache_index]
 
-        if self.fetch_policy in ["INFOCOM"]:
+        if self.fetch_policy in ["PPVF"]:
             action[list(set(ed_slot_trace['i']))] = 1
             redundant_request_indices = np.argwhere(redundant_request==1)[:,0]
             action[redundant_request_indices] = 1
@@ -198,7 +191,7 @@ class ED(object):
         return hits
 
     def get_noise_paras(self):
-        if self.fetch_policy in ["INFOCOM"]:
+        if self.fetch_policy in ["PPVF"]:
             return (self.n, self.sum_XY, self.sum_X,self.sum_X_square)
         else:
             raise ValueError("not this fetch_policy {}.".format({self.fetch_policy}))
@@ -208,7 +201,7 @@ class ED(object):
 
     def update_noise_paras(self, updated_buffer):
         if self.if_noise == True:
-            if  self.fetch_policy in ["INFOCOM"]:
+            if  self.fetch_policy in ["PPVF"]:
                 self.n = updated_buffer[0]
                 self.sum_XY = updated_buffer[1]
                 self.sum_X = updated_buffer[2]

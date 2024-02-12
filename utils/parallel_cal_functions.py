@@ -107,26 +107,7 @@ def get_redundant_request(ed_index, cache_index, origin_density,noise_paras, onl
 
     action = np.zeros(shape=cfg_dict["content_num"],dtype=np.int8) #当前slot的缓存action
     f_k = 0 
-    if cfg_dict["fetch_policy"] == "GREED": #贪婪算法 + HPP_PAC
-        sorted_indices = np.argsort(-scaled_density)
-        sorted_density = scaled_density[sorted_indices]
-        for dens, i in zip(sorted_density, sorted_indices):
-            if f_k + 1 > f_e:
-                break
-            # elif i in cache: #在缓存中就不请求
-            #     pass
-            #     f_k += 1
-            #     action[i] = 1
-            elif cfg_dict["epsilon"] <= (1- remained_b[i]) * cfg_dict["xi"]:
-                f_k += 1
-                action[i] = 1
-                if cfg_dict['if_noise']: #考虑隐私，确认加噪，需要消耗隐私预算
-                    remained_b[i] = remained_b[i] + cfg_dict["epsilon"] / cfg_dict["xi"]
-                else:
-                    remained_b[i] = 0
-            else: #超出隐私限制
-                action[i] = 0
-    elif cfg_dict["fetch_policy"] == "INFOCOM": #infocom2022 + HPP_PAC
+    if cfg_dict["fetch_policy"] == "PPVF": #infocom2022 + HPP_PAC
         sampled_indexes = np.random.choice(range(cfg_dict["content_num"]), size = cfg_dict["content_num"], replace = False) # 无放回随机采样
         for i in sampled_indexes:
             if f_k + 1 > f_e:
@@ -145,26 +126,6 @@ def get_redundant_request(ed_index, cache_index, origin_density,noise_paras, onl
                 remained_b[i] = remained_b[i] + cfg_dict["epsilon"] / cfg_dict["xi"] 
             else:
                 action[i] = 0
-    elif cfg_dict["fetch_policy"] == "PPVF": # ours先排序+阈值
-            sorted_indices = np.argsort(-scaled_density)
-            sorted_density = scaled_density[sorted_indices]
-            for dens, i in zip(sorted_density, sorted_indices):
-                if f_k + 1 > f_e:
-                    break
-                # elif i in cache:
-                #     pass
-                #     f_k += 1
-                #     action[i] = 1
-                elif remained_b[i] <= cfg_dict["B0"]: #低于阈值，必然请求
-                    f_k += 1
-                    action[i] = 1
-                    remained_b[i] = remained_b[i] + cfg_dict["epsilon"] / cfg_dict["xi"] 
-                elif (scaled_density[i] / cfg_dict["epsilon"] > get_th(remained_b[i])) and (cfg_dict["epsilon"] <= (1 - remained_b[i]) * cfg_dict["xi"]):
-                    f_k += 1
-                    action[i] = 1
-                    remained_b[i] = remained_b[i] + cfg_dict["epsilon"] / cfg_dict["xi"] 
-                else:
-                    action[i] = 0
     else:
         raise ValueError(f"not such fetch policy: {cfg_dict['fetch_policy']} or {cfg_dict['fetch_policy']} not privacy budget requirement")
     
