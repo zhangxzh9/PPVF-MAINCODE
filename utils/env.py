@@ -8,7 +8,7 @@ import time
 from global_config import GLOBAL_PATH, DATA_PATH
 from utils.edge import ED
 from utils.para_server import PS
-from utils.parallel_cal_functions import init_ed_kernel, get_redundant_request, HRS_online_traning
+from utils.parallel_cal_functions import init_ed_kernel, get_redundant_request
 
 
 class Env(object):

@@ -1,5 +1,5 @@
 import numpy as np
-from utils.hpp import HPP, HRS
+from utils.hpp import HPP
 import random
 from scipy.stats import pearsonr
 from collections import OrderedDict
