@@ -7,9 +7,9 @@
 
 -----
 
-GLOBAL_PATH = "/home/your/code/path/"
+GLOBAL_PATH = "/your/code/path/"
 
-DATA_PATH =  "/home/your/datasets/path/"
+DATA_PATH =  "/your/datasets/path/"
 
 -----
 
